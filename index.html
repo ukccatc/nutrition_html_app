@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BHLTHY | Nutritional Data Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass-blur: blur(16px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #a78bfa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1rem 1rem 1rem 3.5rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            backdrop-filter: var(--glass-blur);
+        }
+
+        .btn {
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: none;
+        }
+
+        .btn-upload {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-upload:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: var(--glass-blur);
+            animation: fadeInUp 0.5s ease-out backwards;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .product-name { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+        .product-meta { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+        .energy-badge {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .energy-val { font-weight: 800; font-size: 1.2rem; display: block; }
+        .energy-unit { font-size: 0.7rem; text-transform: uppercase; opacity: 0.8; }
+
+        .nutrient-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        .nutrient-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .nutrient-indent {
+            padding-left: 1.5rem;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .nutrient-indent .label::before {
+            content: "•";
+            margin-right: 8px;
+            color: var(--accent-blue);
+        }
+
+        .value { font-weight: 600; color: var(--text-main); }
+        .label { color: var(--text-dim); }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading-overlay">
+        <h2>Initialising Explorer...</h2>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Nutritional Intelligence</h1>
+            <p>Advanced real-time data visualization for BHLTHY</p>
+        </header>
+
+        <section class="controls">
+            <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search products, vitamins, or groups...">
+            </div>
+            
+            <label for="fileInput" class="btn btn-upload">
+                <i data-lucide="upload"></i>
+                <span>Direct File Access</span>
+            </label>
+            <input type="file" id="fileInput" accept=".jsonl,.json" class="hidden">
+        </section>
+
+        <div id="productGrid" class="product-grid"></div>
+    </div>
+
+    <script>
+        let allProducts = [];
+
+        async function init() {
+            try {
+                const response = await fetch('products.jsonl');
+                if (response.ok) {
+                    const text = await response.text();
+                    parseAndRender(text);
+                } else {
+                    console.warn("Could not auto-load products.jsonl. Waiting for user upload.");
+                }
+            } catch (e) {
+                console.error("Auto-load failed:", e);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        function parseAndRender(text) {
+            allProducts = text.trim().split('\n')
+                .filter(line => line.trim())
+                .map(line => {
+                    try { return JSON.parse(line); }
+                    catch(e) { return null; }
+                })
+                .filter(p => p !== null);
+            
+            render(allProducts);
+        }
+
+        function render(products) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            products.forEach((p, idx) => {
+                const card = document.createElement('article');
+                card.className = 'product-card';
+                card.style.animationDelay = `${idx * 0.1}s`;
+
+                let sectionsHtml = '';
+                if (p.sections) {
+                    for (const [title, nutrients] of Object.entries(p.sections)) {
+                        sectionsHtml += `
+                            <div class="nutrient-section">
+                                <h3 class="section-title">${title}</h3>
+                                ${Object.entries(nutrients).map(([name, data]) => `
+                                    <div class="nutrient-item ${data.indent ? 'nutrient-indent' : ''}">
+                                        <span class="label">${name}</span>
+                                        <span class="value">${data.raw || (data.value + (data.unit || ''))}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="product-header">
+                        <div class="product-info">
+                            <h2 class="product-name">${p.name.replace('Voedingswaarde van ', '')}</h2>
+                            <p class="product-meta">ID: ${p.id} • ${p.product_group || 'General'}</p>
+                        </div>
+                        <div class="energy-badge">
+                            <span class="energy-val">${p.energy?.['Energie (kcal)']?.value || (p.sections?.Voedingswaarde?.Energie?.value) || '?'}</span>
+                            <span class="energy-unit">kcal</span>
+                        </div>
+                    </div>
+                    ${sectionsHtml}
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // Search Logic
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(term) || 
+                (p.product_group && p.product_group.toLowerCase().includes(term))
+            );
+            render(filtered);
+        });
+
+        // File Input Logic
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => parseAndRender(event.target.result);
+            reader.readAsText(file);
+        });
+
+        init();
+    </script>
+</body>
+</html>
