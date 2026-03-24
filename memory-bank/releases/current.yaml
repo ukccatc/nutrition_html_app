@@ -1,0 +1,12 @@
+releases:
+  - version: 1.0.0
+    status: in_progress
+    started_at: "2026-03-24"
+    tasks:
+      - task_id: 1
+        title: "Initial Git Setup and Documentation"
+        status: in_progress
+        changes:
+          - "Initialize git repo"
+          - "Setup GitHub Actions"
+          - "Create Memory Bank files"
